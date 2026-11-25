@@ -43,7 +43,6 @@ const State = new StateSchema({
 
 const solutionNode: GraphNode<typeof State> = async (state: typeof State) => {
   // here we have to invoke 3  models
-  console.log(state);
   const [mistral_solution, cohere_solution] = await Promise.all([
     mistralModel.invoke(state.messages[0].text),
     cohereModel.invoke(state.messages[0].text),
@@ -56,6 +55,7 @@ const solutionNode: GraphNode<typeof State> = async (state: typeof State) => {
 
 const judgeNode: GraphNode<typeof State> = async (state: typeof State) => {
   const { solution_1, solution_2 } = state;
+
   const judge = createAgent({
     model: geminiModel,
     tools: [],
@@ -76,6 +76,7 @@ const judgeNode: GraphNode<typeof State> = async (state: typeof State) => {
   });
 
   const result = judgeResponse.structuredResponse;
+
   return {
     judge_recommendation: result,
   };
@@ -83,7 +84,7 @@ const judgeNode: GraphNode<typeof State> = async (state: typeof State) => {
 
 const graph = new StateGraph(State)
   .addNode("solution", solutionNode)
-  .addNode("judge", solutionNode)
+  .addNode("judge", judgeNode)
   .addEdge(START, "solution")
   .addEdge("solution", "judge")
   .addEdge("judge", END)
@@ -93,6 +94,5 @@ export default async function useGraph(userMessage: string) {
   const result = await graph.invoke({
     messages: [new HumanMessage(userMessage)],
   });
-  console.log(result);
   return result.messages;
 }
