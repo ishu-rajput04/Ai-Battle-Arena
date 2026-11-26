@@ -104,7 +104,7 @@ export default function App() {
     try {
       // Backend invoke (http://localhost:3000/invoke)
       const res = await axios.post(
-        'http://localhost:3000/invoke',
+        'https://ai-battle-arena-2-g26f.onrender.com/invoke',
         { input: promptToSend },
         { timeout: 40000 }
       );
