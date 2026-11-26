@@ -1,20 +1,39 @@
 import express from "express";
-import useGraph from "./services/graph.ai.service.js";
-const app = express();
- 
+import runGraph from "./services/graph.ai.service.js";
+import Cors from "cors";
 
+const app = express();
+
+app.use(express.json());
+app.use(
+  Cors({
+    origin: (origin, callback) => callback(null, true),
+    credentials: true,
+  }),
+);
+
+app.use(express.static("./public"));
 // health check
 
 app.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "ok",
-    });
+  res.status(200).json({
+    status: "ok",
+  });
 });
 
-app.post("/use-graph", async (req, res) => {
+app.get("/", async (req, res) => {
+  const result = await runGraph("what is the capital of Germany.");
+  res.json(result);
+});
 
-    await useGraph("what is the capital of India?");
-    
+app.post("/invoke", async (req, res) => {
+  const { input } = req.body;
+  const result = await runGraph(input);
+  res.status(200).json({
+    message: "request send successfully.",
+    success: true,
+    result,
+  });
 });
 
 export default app;
